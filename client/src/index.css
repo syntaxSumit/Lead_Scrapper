@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-base text-slate-100 min-h-screen;
+    background-color: #08090d;
+    background-image: 
+      radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 10% 30%, rgba(59, 130, 246, 0.04) 0%, transparent 35%);
+    background-attachment: fixed;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+}
+
+@layer utilities {
+  .text-muted {
+    @apply text-slate-400;
+  }
+  .card-aesthetic {
+    background: linear-gradient(180deg, rgba(20, 21, 31, 0.85) 0%, rgba(14, 15, 23, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+  }
+  .card-hover {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .input-aesthetic {
+    background: rgba(18, 19, 28, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    color: #f1f5f9;
+    transition: all 0.15s ease-out;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  .input-aesthetic:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.8);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    background: rgba(22, 23, 34, 0.95);
+  }
+  .badge-glow {
+    box-shadow: 0 0 12px -2px currentColor;
+  }
+}
+
+/* Custom range slider thumb */
+input[type=range] {
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  height: 5px;
+  border-radius: 9999px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #6366f1;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.9);
+}
+
+/* Leaflet map dark mode */
+.leaflet-container { background: #10111a !important; font-family: inherit; }
+.leaflet-tile-pane { filter: brightness(0.82) invert(1) contrast(1.15) hue-rotate(185deg); }
+.leaflet-popup-content-wrapper { 
+  background: #141522; 
+  color: #f8fafc; 
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+.leaflet-popup-tip { background: #141522; }
