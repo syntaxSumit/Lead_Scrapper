@@ -1,8 +1,14 @@
 import axios from 'axios';
 import useStore from '../store';
 
+const rawUrl = (import.meta.env.VITE_API_URL || '/api').trim();
+// Auto-append '/api' if a full URL was provided without the '/api' suffix
+const baseURL = rawUrl.startsWith('http') && !rawUrl.replace(/\/+$/, '').endsWith('/api')
+  ? `${rawUrl.replace(/\/+$/, '')}/api`
+  : rawUrl;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
 });
 
 api.interceptors.request.use(config => {

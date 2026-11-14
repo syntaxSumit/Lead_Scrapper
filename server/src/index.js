@@ -28,17 +28,29 @@ app.set('trust proxy', 1);
 // HIGH-03: Security headers via Helmet
 app.use(helmet());
 
-// HIGH-03: Tighter CORS — only allow configured CLIENT_URL (or localhost in dev)
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+// HIGH-03: Tighter CORS — allow configured CLIENT_URL, localhost, and Vercel domains
+const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
-  .map(o => o.trim());
+  .map(o => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    // Allow non-browser requests or same-origin
+    if (!origin) return cb(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    const isAllowed =
+      configuredOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith('.vercel.app') ||
+      cleanOrigin.includes('localhost');
+
+    if (isAllowed) return cb(null, true);
+    console.warn(`[CORS blocked] Origin: ${origin}`);
+    cb(null, false);
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json({ limit: '2mb' }));
