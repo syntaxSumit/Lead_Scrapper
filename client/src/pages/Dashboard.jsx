@@ -6,6 +6,8 @@ import MapView from '../components/dashboard/MapView.jsx';
 import SavedSearches from '../components/dashboard/SavedSearches.jsx';
 import DiscoveryForm from '../components/discovery/DiscoveryForm.jsx';
 import OutreachModal from '../components/outreach/OutreachModal.jsx';
+import AutoOutreachModal from '../components/outreach/AutoOutreachModal.jsx';
+import WhatsAppConnect from '../components/whatsapp/WhatsAppConnect.jsx';
 import Button from '../components/ui/Button.jsx';
 import { IconTarget, IconTable, IconMap } from '../components/ui/Icons.jsx';
 import { useLeads } from '../hooks/useLeads.js';
@@ -30,6 +32,8 @@ export default function Dashboard() {
   const setView = useStore(s => s.setView);
 
   const [outreachLead, setOutreachLead] = useState(null);
+  const [showAutoOutreach, setShowAutoOutreach] = useState(false);
+  const [waConnected, setWaConnected] = useState(false);
 
   const { discover, loading: searchLoading } = useDiscovery(async () => {
     await fetchLeads();
@@ -91,6 +95,8 @@ export default function Dashboard() {
             </button>
           </div>
 
+          <WhatsAppConnect onStatusChange={setWaConnected} />
+
           <span className="text-xs text-slate-400 font-mono hidden md:inline px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.05]">
             {user?.email}
           </span>
@@ -110,6 +116,18 @@ export default function Dashboard() {
 
         {/* Stats Row */}
         <StatsBar stats={stats} />
+
+        {/* Auto Outreach launcher */}
+        {leads.length > 0 && (
+          <div className="flex items-center justify-between bg-surface border border-border rounded-xl px-4 py-3">
+            <div className="text-xs text-slate-400">
+              <strong className="text-slate-200">{leads.filter(l => ['NO_WEBSITE', 'BROKEN'].includes(l.websiteStatus) && l.phone && l.pipelineStatus === 'NEW').length}</strong> leads ready for auto-outreach (no website or broken, with phone, NEW status)
+            </div>
+            <Button size="sm" onClick={() => setShowAutoOutreach(true)}>
+              🚀 Auto WhatsApp Outreach
+            </Button>
+          </div>
+        )}
 
         {/* Filters */}
         <LeadFilters onFilter={filters => fetchLeads(filters)} />
@@ -135,6 +153,13 @@ export default function Dashboard() {
         onClose={() => setOutreachLead(null)}
         lead={outreachLead}
         onLeadUpdate={handleLeadUpdate}
+      />
+
+      <AutoOutreachModal
+        open={showAutoOutreach}
+        onClose={() => { setShowAutoOutreach(false); fetchLeads(); fetchStats(); }}
+        waConnected={waConnected}
+        leadsCount={leads.length}
       />
     </div>
   );

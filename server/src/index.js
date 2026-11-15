@@ -19,6 +19,7 @@ const placesRoutes = require('./routes/places');
 const leadsRoutes = require('./routes/leads');
 const analyzeRoutes = require('./routes/analyze');
 const outreachRoutes = require('./routes/outreach');
+const whatsappRoutes = require('./routes/whatsapp');
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use('/api/places', placesRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/analyze', analyzeRoutes);
 app.use('/api/outreach', outreachRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date() }));
 

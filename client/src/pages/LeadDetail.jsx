@@ -124,7 +124,7 @@ export default function LeadDetail() {
                 Internal Outreach Notes
               </label>
               <input
-                className="input text-xs"
+                className="input-aesthetic w-full text-xs"
                 placeholder="e.g. Spoke to owner Ramesh, follow up Tuesday..."
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
