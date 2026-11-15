@@ -28,6 +28,8 @@ services:
         sync: false
       - key: AGENCY_NAME
         value: make4yu
+      - key: AGENCY_URL
+        value: https://make4yu.com
       - key: AGENCY_OFFER
         value: 2 free sample designs before you pay, live in about 7 days, client edits their own site, live dashboard included.
       - key: GCP_PROJECT_ID

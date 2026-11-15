@@ -45,17 +45,19 @@ async function generatePitchPlaybook({ lead, language = 'hinglish' }) {
   if (!LANG_INSTRUCTION[language]) language = 'hinglish';
   const f = auditFacts(lead);
   const agency = process.env.AGENCY_NAME || 'make4yu';
+  const agencyUrl = process.env.AGENCY_URL || 'https://make4yu.com';
   const offer = process.env.AGENCY_OFFER || '2 free sample designs before you pay, live in about 7 days, client edits their own site, live dashboard included.';
 
-  const prompt = `You are a senior sales coach for ${agency}, a web agency in India that pitches local businesses.
+  const prompt = `You are a senior sales coach for ${agency} (${agencyUrl}), a web agency in India that pitches local businesses.
 Our offer: ${offer}
 
 Build a pitch playbook for approaching THIS business, based strictly on the audit below. Every point must reference a real finding — no generic advice. If the business has no website, build the pitch around what they lose without one (map viewers who can't see services/prices, no WhatsApp enquiry path, competitors with sites).
 
 CRITICAL REQUIREMENTS:
-- Clearly establish who you are and where you are speaking from: identify as speaking from "${agency}" web agency.
+- Clearly establish who you are and where you are speaking from: identify as speaking from "${agency}" web agency (${agencyUrl}).
 - The closing ask and value proposition MUST pitch our core risk-free offer: "${offer}".
 - Always offer the 2 free sample mockups upfront before asking for any commitment or money.
+- firstMessage MUST use clean WhatsApp formatting: double line breaks (\\n\\n) between paragraphs, bold (*word*), bullet points with emojis, and end with the sign-off: Best regards,\\n*Team ${agency}*\\n🌐 ${agencyUrl}
 
 Business: ${lead.name}
 Category: ${lead.category || 'local business'}
@@ -101,7 +103,7 @@ Return ONLY valid JSON with exactly these keys:
     { "day": 5, "channel": "...", "message": "..." }
   ],
   "avoid": ["things NOT to say to this business"],
-  "firstMessage": "complete ready-to-send first WhatsApp message introducing who you are from ${agency}, complimenting ${lead.name}, highlighting 1 missed opportunity, offering 2 free custom sample designs, ending with an easy question (under 90 words)"
+  "firstMessage": "complete ready-to-send first WhatsApp message introducing who you are from ${agency}, with line breaks (\\n\\n), bullet points for the 2 free sample designs offer, ending with an easy question and sign-off with ${agencyUrl} (under 95 words)"
 }
 Give 3–4 talkingPoints and 4–5 objections.`;
 
