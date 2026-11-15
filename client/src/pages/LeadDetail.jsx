@@ -49,7 +49,7 @@ export default function LeadDetail() {
     try {
       const { data } = await analyzeLead(id);
       setLead(data);
-      toast.success('Analysis refreshed successfully');
+      toast.success(data.pitchPlaybook ? 'Audit and pitch playbook ready' : 'Analysis refreshed successfully');
     } catch {
       toast.error('Analysis failed');
     } finally {
@@ -137,7 +137,7 @@ export default function LeadDetail() {
         </Card>
 
         {/* Full Analyzer Report Component */}
-        <AnalyzerPanel lead={lead} onAnalyze={handleAnalyze} analyzing={analyzing} />
+        <AnalyzerPanel lead={lead} onAnalyze={handleAnalyze} analyzing={analyzing} onLeadUpdate={updated => setLead(updated)} />
       </div>
 
       <OutreachModal

@@ -41,6 +41,25 @@ const outreachSchema = new mongoose.Schema({
   generatedAt: Date,
 }, { _id: false });
 
+// How to pitch this business, generated from the audit
+const pitchPlaybookSchema = new mongoose.Schema({
+  summary:          String,
+  temperature:      String,
+  decisionMaker:    String,
+  bestChannel:      String,
+  bestTime:         String,
+  openingHook:      String,
+  talkingPoints:    [{ _id: false, issue: String, impact: String, solution: String, proofLine: String }],
+  valueProposition: String,
+  objections:       [{ _id: false, objection: String, response: String }],
+  closingAsk:       String,
+  followUps:        [{ _id: false, day: Number, channel: String, message: String }],
+  avoid:            [String],
+  firstMessage:     String,
+  language:  { type: String, enum: ['hinglish', 'hindi', 'english'], default: 'hinglish' },
+  generatedAt: Date,
+}, { _id: false });
+
 const leadSchema = new mongoose.Schema({
   place_id:    { type: String, required: true },
   name:        { type: String, required: true },
@@ -67,6 +86,7 @@ const leadSchema = new mongoose.Schema({
   notes:       String,
   followUpDate: Date,
   outreach:    outreachSchema,
+  pitchPlaybook: pitchPlaybookSchema,
   lat:         Number,
   lng:         Number,
   openingHours: [String],

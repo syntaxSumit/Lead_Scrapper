@@ -3,10 +3,11 @@ import Button from '../ui/Button.jsx';
 import Badge from '../ui/Badge.jsx';
 import ScoreGauge from './ScoreGauge.jsx';
 import ChecklistCard from './ChecklistCard.jsx';
+import PitchPlaybook from './PitchPlaybook.jsx';
 import { IconMapPin, IconFileText, IconSparkles, IconExternalLink } from '../ui/Icons.jsx';
 import { scoreBg, statusBg } from '../../utils/format.js';
 
-export default function AnalyzerPanel({ lead, onAnalyze, analyzing }) {
+export default function AnalyzerPanel({ lead, onAnalyze, analyzing, onLeadUpdate }) {
   if (!lead) return null;
 
   const analysis = lead.analysis;
@@ -68,7 +69,7 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing }) {
             className="gap-1.5"
           >
             <IconSparkles className="w-3.5 h-3.5" />
-            {analyzing ? 'Analyzing with AI…' : 'Re-Run Audit'}
+            {analyzing ? 'Auditing & building pitch…' : 'Re-Run Audit'}
           </Button>
           <Button onClick={handlePrint} variant="secondary" className="gap-1.5">
             <IconFileText className="w-3.5 h-3.5" /> Export PDF
@@ -82,7 +83,7 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing }) {
             No analysis report generated yet for this business.
           </p>
           <Button onClick={() => onAnalyze(lead._id)} disabled={analyzing}>
-            {analyzing ? 'Analyzing with AI…' : 'Run Full AI Analysis'}
+            {analyzing ? 'Auditing & building pitch…' : 'Run Full AI Analysis'}
           </Button>
         </Card>
       ) : (
@@ -198,6 +199,9 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing }) {
               </ul>
             </Card>
           </div>
+
+          {/* How to pitch — built from this audit */}
+          {!analysis.error && <PitchPlaybook lead={lead} onLeadUpdate={onLeadUpdate} />}
         </div>
       )}
     </div>

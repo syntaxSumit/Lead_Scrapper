@@ -33,7 +33,14 @@
    - Generates WhatsApp pitches (<100 words), formal email subject + body, and a 30-second cold-call script.
    - Direct 1-click `wa.me` WhatsApp web/app link with pre-filled message, `mailto:`, and `tel:` call button.
 
-6. **Interactive Dashboard & CRM**
+6. **Pitch Playbook (after every audit)**
+   - Built automatically from the full audit: strategy, lead temperature, who to talk to, best channel and time.
+   - Opening hook, 3–4 talking points tied to real findings (issue → what it costs them → our fix → a line to say).
+   - Objection handling, closing ask, Day 0 / 2 / 5 follow-up plan, things not to say, and a ready-to-send first WhatsApp message.
+   - Hinglish, Hindi or English; regenerate without re-running the audit (`POST /api/analyze/:id/pitch`).
+   - Optional `.env`: `AGENCY_NAME` and `AGENCY_OFFER` so pitches describe your own offer.
+
+7. **Interactive Dashboard & CRM**
    - High-density table with multi-column sorting, live search, and filter drawers.
    - Interactive Dark-Mode **Leaflet Map** showing geocoded lead markers color-coded by lead temperature.
    - Mini CRM Pipeline: `NEW` → `CONTACTED` → `REPLIED` → `MEETING` → `WON` / `LOST` with notes.
