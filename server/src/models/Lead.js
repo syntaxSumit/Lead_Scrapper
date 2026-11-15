@@ -100,6 +100,7 @@ const leadSchema = new mongoose.Schema({
 leadSchema.index({ leadScore: -1 });
 leadSchema.index({ websiteStatus: 1 });
 leadSchema.index({ pipelineStatus: 1 });
+leadSchema.index({ userId: 1, leadScore: -1 });
 leadSchema.index({ userId: 1, createdAt: -1 });
 // CRIT-03: compound unique index — same place can be saved by different users
 leadSchema.index({ place_id: 1, userId: 1 }, { unique: true });

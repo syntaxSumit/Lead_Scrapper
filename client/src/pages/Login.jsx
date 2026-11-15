@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '../components/ui/Card.jsx';
 import Input from '../components/ui/Input.jsx';
 import Button from '../components/ui/Button.jsx';
 import Spinner from '../components/ui/Spinner.jsx';
 import { IconTarget } from '../components/ui/Icons.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import api from '../api/axios.js';
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -13,6 +14,11 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   const { handleLogin, handleRegister, loading } = useAuth();
+
+  // shortcut: warm up Render server early while user types credentials
+  useEffect(() => {
+    api.get('/health').catch(() => {});
+  }, []);
 
   function onSubmit(e) {
     e.preventDefault();

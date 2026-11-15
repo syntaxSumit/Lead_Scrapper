@@ -49,7 +49,7 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
   const cached = await SearchCache.findOne({ cacheKey, expiresAt: { $gt: new Date() } });
   if (cached && cached.placeIds.length > 0) {
     console.log('[places] cache hit', cacheKey);
-    return Lead.find({ place_id: { $in: cached.placeIds } }).lean();
+    return Lead.find({ place_id: { $in: cached.placeIds }, userId }).sort({ leadScore: -1 }).lean();
   }
 
   const headers = {
@@ -144,43 +144,51 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     if (pageToken) await new Promise(r => setTimeout(r, 2000));
   } while (pageToken && places.length < targetLimit);
 
-  // Upsert each place into the Lead collection
+  // Process all discovered places concurrently (website check + scoring)
   const placeIds = [];
+  const placeDocs = await Promise.all(
+    places.map(async p => {
+      const placeId = p.id;
+      placeIds.push(placeId);
 
-  for (const p of places) {
-    const placeId = p.id;
-    placeIds.push(placeId);
+      const websiteUrl = p.websiteUri || null;
+      const websiteStatus = await detectWebsiteStatus(websiteUrl);
 
-    const websiteUrl = p.websiteUri || null;
-    const websiteStatus = await externalApiQueue(() => detectWebsiteStatus(websiteUrl));
+      const doc = {
+        place_id:    placeId,
+        name:        p.displayName?.text || 'Unknown',
+        category:    category || query,
+        address:     p.formattedAddress,
+        phone:       p.nationalPhoneNumber,
+        rating:      p.rating,
+        reviewCount: p.userRatingCount,
+        mapsUrl:     p.googleMapsUri,
+        websiteUrl,
+        websiteStatus,
+        lat:         p.location?.latitude,
+        lng:         p.location?.longitude,
+        openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
+        searchQuery: query || category,
+        userId,
+      };
 
-    const doc = {
-      place_id:    placeId,
-      name:        p.displayName?.text || 'Unknown',
-      category:    category || query,
-      address:     p.formattedAddress,
-      phone:       p.nationalPhoneNumber,
-      rating:      p.rating,
-      reviewCount: p.userRatingCount,
-      mapsUrl:     p.googleMapsUri,
-      websiteUrl,
-      websiteStatus,
-      lat:         p.location?.latitude,
-      lng:         p.location?.longitude,
-      openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
-      searchQuery: query || category,
-      userId,
-    };
+      const scores = computeLeadScore(doc);
+      doc.leadScore  = scores.leadScore;
+      doc.scoreLabel = scores.scoreLabel;
+      return doc;
+    })
+  );
 
-    const scores = computeLeadScore(doc);
-    doc.leadScore  = scores.leadScore;
-    doc.scoreLabel = scores.scoreLabel;
-
-    await Lead.findOneAndUpdate(
-      { place_id: placeId, userId },
-      { $set: doc },
-      { upsert: true, new: true }
-    );
+  // Single bulk write to MongoDB instead of sequential queries
+  if (placeDocs.length > 0) {
+    const bulkOps = placeDocs.map(doc => ({
+      updateOne: {
+        filter: { place_id: doc.place_id, userId },
+        update: { $set: doc },
+        upsert: true,
+      },
+    }));
+    await Lead.bulkWrite(bulkOps);
   }
 
   // Cache this search result
@@ -191,7 +199,7 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     { upsert: true }
   );
 
-  return Lead.find({ place_id: { $in: placeIds } }).sort({ leadScore: -1 }).lean();
+  return Lead.find({ place_id: { $in: placeIds }, userId }).sort({ leadScore: -1 }).lean();
 }
 
 module.exports = { searchPlaces };

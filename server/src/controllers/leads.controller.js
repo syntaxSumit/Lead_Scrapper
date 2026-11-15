@@ -96,17 +96,24 @@ async function deleteSelectedLeads(req, res, next) {
 async function getStats(req, res, next) {
   try {
     const userId = req.user._id;
-    const [total, noWebsite, socialOnly, broken, hot, contacted, replied, won] = await Promise.all([
-      Lead.countDocuments({ userId }),
-      Lead.countDocuments({ userId, websiteStatus: 'NO_WEBSITE' }),
-      Lead.countDocuments({ userId, websiteStatus: 'SOCIAL_ONLY' }),
-      Lead.countDocuments({ userId, websiteStatus: 'BROKEN' }),
-      Lead.countDocuments({ userId, scoreLabel: 'HOT' }),
-      Lead.countDocuments({ userId, pipelineStatus: 'CONTACTED' }),
-      Lead.countDocuments({ userId, pipelineStatus: 'REPLIED' }),
-      Lead.countDocuments({ userId, pipelineStatus: 'WON' }),
+    // Single aggregation query instead of 8 separate countDocuments round-trips
+    const [result] = await Lead.aggregate([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: null,
+          total:       { $sum: 1 },
+          noWebsite:   { $sum: { $cond: [{ $eq: ['$websiteStatus', 'NO_WEBSITE'] }, 1, 0] } },
+          socialOnly:  { $sum: { $cond: [{ $eq: ['$websiteStatus', 'SOCIAL_ONLY'] }, 1, 0] } },
+          broken:      { $sum: { $cond: [{ $eq: ['$websiteStatus', 'BROKEN'] }, 1, 0] } },
+          hot:         { $sum: { $cond: [{ $eq: ['$scoreLabel', 'HOT'] }, 1, 0] } },
+          contacted:   { $sum: { $cond: [{ $eq: ['$pipelineStatus', 'CONTACTED'] }, 1, 0] } },
+          replied:     { $sum: { $cond: [{ $eq: ['$pipelineStatus', 'REPLIED'] }, 1, 0] } },
+          won:         { $sum: { $cond: [{ $eq: ['$pipelineStatus', 'WON'] }, 1, 0] } },
+        },
+      },
     ]);
-    res.json({ total, noWebsite, socialOnly, broken, hot, contacted, replied, won });
+    res.json(result || { total: 0, noWebsite: 0, socialOnly: 0, broken: 0, hot: 0, contacted: 0, replied: 0, won: 0 });
   } catch (e) { next(e); }
 }
 
