@@ -14,10 +14,10 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 overflow-y-auto p-4 bg-black/70 backdrop-blur-sm animate-fade-in flex min-h-full items-center justify-center"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className={`bg-surface border border-border rounded-2xl w-full ${widths[size]} max-h-[90vh] flex flex-col shadow-2xl`}>
+      <div className={`bg-surface border border-border rounded-2xl w-full ${widths[size]} my-auto max-h-[90vh] flex flex-col shadow-2xl relative`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <h2 className="text-base font-semibold text-slate-100">{title}</h2>
           <button

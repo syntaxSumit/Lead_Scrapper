@@ -84,14 +84,18 @@ export default function WhatsAppConnect({ onStatusChange }) {
 
       {/* QR Code Modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Connect WhatsApp" size="sm">
-        <div className="flex flex-col items-center gap-4 py-4">
-          <p className="text-xs text-slate-400 text-center max-w-xs">
+        <div className="flex flex-col items-center gap-3 py-2 text-center">
+          <p className="text-xs text-slate-300 leading-relaxed max-w-xs">
             Open <strong>WhatsApp</strong> on your phone → <strong>Linked Devices</strong> → <strong>Link a Device</strong> → Scan this QR code
           </p>
 
           {status.qr ? (
-            <div className="bg-white p-3 rounded-xl shadow-lg">
-              <img src={status.qr} alt="WhatsApp QR Code" className="w-64 h-64" />
+            <div className="bg-white p-2.5 rounded-xl shadow-lg border border-white/20 flex items-center justify-center my-1">
+              <img
+                src={status.qr}
+                alt="WhatsApp QR Code"
+                className="w-52 h-52 sm:w-56 sm:h-56 object-contain block"
+              />
             </div>
           ) : status.connecting ? (
             <div className="flex flex-col items-center gap-2 py-8">
@@ -99,12 +103,12 @@ export default function WhatsAppConnect({ onStatusChange }) {
               <p className="text-xs text-slate-400">Generating QR code...</p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2 py-8">
+            <div className="flex flex-col items-center gap-2 py-6">
               <Button onClick={handleConnect}>Generate QR Code</Button>
             </div>
           )}
 
-          <p className="text-[10px] text-slate-500 text-center">
+          <p className="text-[11px] text-slate-500 max-w-xs leading-normal">
             Session will persist across server restarts. You won't need to re-scan unless you log out.
           </p>
         </div>
