@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const Lead = require('../models/Lead');
+const SeenPlace = require('../models/SeenPlace');
 const SearchCache = require('../models/SearchCache');
 const { detectWebsiteStatus } = require('./websiteDetect.service');
 const { computeLeadScore } = require('./scoring.service');
@@ -43,13 +44,15 @@ function makeCacheKey(params) {
 
 async function searchPlaces({ query, location, lat, lng, radius = 5000, category, userId, limit = 20 }) {
   const targetLimit = Math.max(1, Math.min(parseInt(limit, 10) || 20, 60));
-  const cacheKey = makeCacheKey({ query: query || category, location, lat, lng, radius, category, targetLimit });
 
-  // Return cached results if fresh
-  const cached = await SearchCache.findOne({ cacheKey, expiresAt: { $gt: new Date() } });
-  if (cached && cached.placeIds.length > 0) {
-    console.log('[places] cache hit', cacheKey);
-    return Lead.find({ place_id: { $in: cached.placeIds }, userId }).sort({ leadScore: -1 }).lean();
+  // 1. Fetch all place_ids this user has EVER seen (to ensure zero duplicate businesses)
+  const seenRecords = await SeenPlace.find({ userId }).select('place_id').lean();
+  const seenSet = new Set(seenRecords.map(s => s.place_id));
+
+  // Also include currently existing leads in memory
+  const existingLeads = await Lead.find({ userId }).select('place_id name').lean();
+  for (const el of existingLeads) {
+    seenSet.add(el.place_id);
   }
 
   const headers = {
@@ -74,12 +77,14 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
   const isNearby = lat != null && lng != null;
   let places = [];
   let pageToken = null;
+  let iteration = 0;
+  const maxIterations = 5;
 
   do {
+    iteration++;
     const googleType = toGoogleType(category);
-    // searchNearby only supports Table A types and cannot paginate beyond 20.
     // If user wants more than 20 leads, or category is not in Table A, use searchText with locationBias.
-    const useNearby = isNearby && targetLimit <= 20 && googleType && googleType !== 'establishment';
+    const useNearby = isNearby && targetLimit <= 20 && googleType && googleType !== 'establishment' && iteration === 1;
 
     const remaining = targetLimit - places.length;
     const maxResultCount = Math.max(1, Math.min(remaining, 20));
@@ -111,7 +116,6 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
           ...(pageToken ? { pageToken } : {}),
         };
 
-    // Important: searchNearby does not support nextPageToken in field mask
     const fieldMask = useNearby
       ? BASE_FIELDS.join(',')
       : [...BASE_FIELDS, 'nextPageToken'].join(',');
@@ -132,55 +136,89 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     }
 
     const data = res.data;
-    places = places.concat(data.places || []);
+    const rawPlaces = data.places || [];
+
+    // Filter out ANY business that this user has already seen before
+    const freshBatch = rawPlaces.filter(p => !seenSet.has(p.id));
+
+    for (const p of freshBatch) {
+      if (places.length < targetLimit) {
+        places.push(p);
+        seenSet.add(p.id);
+      }
+    }
+
     pageToken = data.nextPageToken || null;
 
     if (places.length >= targetLimit) {
-      places = places.slice(0, targetLimit);
       break;
     }
 
-    // Google recommends a short wait before paginating
-    if (pageToken) await new Promise(r => setTimeout(r, 2000));
-  } while (pageToken && places.length < targetLimit);
+    if (pageToken && places.length < targetLimit) {
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  } while (pageToken && places.length < targetLimit && iteration < maxIterations);
 
-  // Process all discovered places concurrently (website check + scoring)
-  const placeIds = [];
-  const placeDocs = await Promise.all(
-    places.map(async p => {
-      const placeId = p.id;
-      placeIds.push(placeId);
+  // 2. Archive all existing leads into SeenPlace so they are permanently remembered
+  if (existingLeads.length > 0) {
+    const archiveOps = existingLeads.map(l => ({
+      updateOne: {
+        filter: { userId, place_id: l.place_id },
+        update: { $setOnInsert: { userId, place_id: l.place_id, name: l.name } },
+        upsert: true,
+      },
+    }));
+    await SeenPlace.bulkWrite(archiveOps);
+  }
 
-      const websiteUrl = p.websiteUri || null;
-      const websiteStatus = await detectWebsiteStatus(websiteUrl);
+  // 3. Delete previous leads from the active Lead table (fresh search replace)
+  await Lead.deleteMany({ userId });
 
-      const doc = {
-        place_id:    placeId,
-        name:        p.displayName?.text || 'Unknown',
-        category:    category || query,
-        address:     p.formattedAddress,
-        phone:       p.nationalPhoneNumber,
-        rating:      p.rating,
-        reviewCount: p.userRatingCount,
-        mapsUrl:     p.googleMapsUri,
-        websiteUrl,
-        websiteStatus,
-        lat:         p.location?.latitude,
-        lng:         p.location?.longitude,
-        openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
-        searchQuery: query || category,
-        userId,
-      };
+  // 4. If new unique places were discovered, register & save them
+  if (places.length > 0) {
+    // Record new places in SeenPlace
+    const newSeenOps = places.map(p => ({
+      updateOne: {
+        filter: { userId, place_id: p.id },
+        update: { $setOnInsert: { userId, place_id: p.id, name: p.displayName?.text } },
+        upsert: true,
+      },
+    }));
+    await SeenPlace.bulkWrite(newSeenOps);
 
-      const scores = computeLeadScore(doc);
-      doc.leadScore  = scores.leadScore;
-      doc.scoreLabel = scores.scoreLabel;
-      return doc;
-    })
-  );
+    // Process all discovered places concurrently (website probe + scoring)
+    const placeDocs = await Promise.all(
+      places.map(async p => {
+        const placeId = p.id;
+        const websiteUrl = p.websiteUri || null;
+        const websiteStatus = await detectWebsiteStatus(websiteUrl);
 
-  // Single bulk write to MongoDB instead of sequential queries
-  if (placeDocs.length > 0) {
+        const doc = {
+          place_id:    placeId,
+          name:        p.displayName?.text || 'Unknown',
+          category:    category || query,
+          address:     p.formattedAddress,
+          phone:       p.nationalPhoneNumber,
+          rating:      p.rating,
+          reviewCount: p.userRatingCount,
+          mapsUrl:     p.googleMapsUri,
+          websiteUrl,
+          websiteStatus,
+          lat:         p.location?.latitude,
+          lng:         p.location?.longitude,
+          openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
+          searchQuery: query || category,
+          userId,
+        };
+
+        const scores = computeLeadScore(doc);
+        doc.leadScore  = scores.leadScore;
+        doc.scoreLabel = scores.scoreLabel;
+        return doc;
+      })
+    );
+
+    // Bulk insert new leads
     const bulkOps = placeDocs.map(doc => ({
       updateOne: {
         filter: { place_id: doc.place_id, userId },
@@ -191,15 +229,7 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     await Lead.bulkWrite(bulkOps);
   }
 
-  // Cache this search result
-  await SearchCache.findOneAndUpdate(
-    { cacheKey },
-    { cacheKey, query: query || category, location, radius, category, placeIds,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
-    { upsert: true }
-  );
-
-  return Lead.find({ place_id: { $in: placeIds }, userId }).sort({ leadScore: -1 }).lean();
+  return Lead.find({ userId }).sort({ leadScore: -1 }).lean();
 }
 
 module.exports = { searchPlaces };
