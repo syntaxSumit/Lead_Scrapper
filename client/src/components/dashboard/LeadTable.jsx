@@ -92,7 +92,8 @@ export default function LeadTable({
     try {
       const { data } = await analyzeLead(id);
       onLeadUpdate?.(data);
-      toast.success('Analysis complete');
+      toast.success('Audit & Pitch Playbook ready!');
+      navigate(`/leads/${id}`);
     } catch {
       toast.error('Analysis failed');
     } finally {
