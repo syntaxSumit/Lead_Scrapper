@@ -44,13 +44,18 @@ function auditFacts(lead) {
 async function generatePitchPlaybook({ lead, language = 'hinglish' }) {
   if (!LANG_INSTRUCTION[language]) language = 'hinglish';
   const f = auditFacts(lead);
-  const agency = process.env.AGENCY_NAME || 'our web agency';
-  const offer = process.env.AGENCY_OFFER || 'Modern, mobile-first websites for local businesses with WhatsApp enquiries, Google visibility and fast delivery.';
+  const agency = process.env.AGENCY_NAME || 'make4yu';
+  const offer = process.env.AGENCY_OFFER || '2 free sample designs before you pay, live in about 7 days, client edits their own site, live dashboard included.';
 
   const prompt = `You are a senior sales coach for ${agency}, a web agency in India that pitches local businesses.
 Our offer: ${offer}
 
 Build a pitch playbook for approaching THIS business, based strictly on the audit below. Every point must reference a real finding — no generic advice. If the business has no website, build the pitch around what they lose without one (map viewers who can't see services/prices, no WhatsApp enquiry path, competitors with sites).
+
+CRITICAL REQUIREMENTS:
+- Clearly establish who you are and where you are speaking from: identify as speaking from "${agency}" web agency.
+- The closing ask and value proposition MUST pitch our core risk-free offer: "${offer}".
+- Always offer the 2 free sample mockups upfront before asking for any commitment or money.
 
 Business: ${lead.name}
 Category: ${lead.category || 'local business'}
@@ -75,27 +80,28 @@ Rules: be respectful (never insult their current site — frame as "missed custo
 
 Return ONLY valid JSON with exactly these keys:
 {
+  "callerIntro": "exact 1-line script for who you are and where you are speaking from (e.g. 'Hello, main [Name] baat kar raha hoon ${agency} web agency se...')",
   "summary": "one sentence: the core strategy for this lead",
   "temperature": "hot | warm | cold — how ready they likely are, with a 5-word reason",
   "decisionMaker": "who to ask for and how to reach them (owner/manager, front desk etc.)",
   "bestChannel": "WhatsApp / call / walk-in / Instagram DM — and why, one line",
   "bestTime": "when to contact this kind of business, one line",
-  "openingHook": "the first 1–2 lines you say or send — compliment + specific observation",
+  "openingHook": "the first 1–2 lines you say or send — introduction from ${agency} + compliment on ${lead.name} + specific audit observation",
   "talkingPoints": [
     { "issue": "finding from the audit", "impact": "what it costs them in customers, plain words", "solution": "what we'd do", "proofLine": "one line you can say to make it concrete" }
   ],
-  "valueProposition": "2–3 lines: why us, tied to their situation",
+  "valueProposition": "2–3 lines: why ${agency}, specifically highlighting: 2 free sample designs before payment, ready in 7 days, client self-editing and live dashboard",
   "objections": [
-    { "objection": "we already have Instagram / no budget / no time / we already have a website / let me think", "response": "short, calm reply" }
+    { "objection": "we already have Instagram / no budget / no time / we already have a website / let me think", "response": "short, calm reply highlighting our free sample without commitment" }
   ],
-  "closingAsk": "the low-friction next step to ask for (e.g. free sample / 10-min call)",
+  "closingAsk": "the low-friction offer: offering 2 free sample mockup designs before they pay a single rupee",
   "followUps": [
     { "day": 0, "channel": "WhatsApp", "message": "..." },
     { "day": 2, "channel": "...", "message": "..." },
     { "day": 5, "channel": "...", "message": "..." }
   ],
   "avoid": ["things NOT to say to this business"],
-  "firstMessage": "complete ready-to-send first WhatsApp message, under 90 words, ends with a question"
+  "firstMessage": "complete ready-to-send first WhatsApp message introducing who you are from ${agency}, complimenting ${lead.name}, highlighting 1 missed opportunity, offering 2 free custom sample designs, ending with an easy question (under 90 words)"
 }
 Give 3–4 talkingPoints and 4–5 objections.`;
 
@@ -107,6 +113,9 @@ Give 3–4 talkingPoints and 4–5 objections.`;
   const arr = (x) => (Array.isArray(x) ? x : []);
   const str = (x) => (typeof x === 'string' ? x : x == null ? '' : String(x));
   return {
+    agencyName: agency,
+    agencyOffer: offer,
+    callerIntro: str(p.callerIntro),
     summary: str(p.summary),
     temperature: str(p.temperature),
     decisionMaker: str(p.decisionMaker),

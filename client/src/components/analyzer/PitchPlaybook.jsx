@@ -103,6 +103,29 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
     <Card className="p-5 print-break">
       {header}
 
+      {/* Agency Identity & Core Offer */}
+      <div className="rounded-xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/60 border border-indigo-500/30 p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-200 bg-indigo-600/30 px-2.5 py-1 rounded-lg border border-indigo-400/40 font-mono shadow-sm">
+            Agency: {p.agencyName || 'make4yu'}
+          </span>
+          <span className="text-xs text-slate-300 font-medium leading-relaxed">
+            ✨ {p.agencyOffer || '2 free sample designs before you pay, live in ~7 days, client edits their own site, live dashboard included.'}
+          </span>
+        </div>
+      </div>
+
+      {/* Who I am & Where I am speaking from */}
+      {p.callerIntro && (
+        <div className="mb-4">
+          <Label className="text-indigo-300">0 · Introduction (Who I am & Where I'm speaking from)</Label>
+          <div className="flex items-start gap-2 rounded-xl bg-indigo-950/35 border border-indigo-500/25 p-3">
+            <p className="flex-1 text-sm text-indigo-100 font-medium leading-relaxed">“{p.callerIntro}”</p>
+            <CopyBtn text={p.callerIntro} />
+          </div>
+        </div>
+      )}
+
       {/* Strategy strip */}
       <div className="rounded-xl bg-gradient-to-r from-indigo-950/60 to-violet-950/40 border border-indigo-500/25 p-4 mb-4">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">

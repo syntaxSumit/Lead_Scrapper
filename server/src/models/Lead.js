@@ -43,6 +43,9 @@ const outreachSchema = new mongoose.Schema({
 
 // How to pitch this business, generated from the audit
 const pitchPlaybookSchema = new mongoose.Schema({
+  agencyName:       String,
+  agencyOffer:      String,
+  callerIntro:      String,
   summary:          String,
   temperature:      String,
   decisionMaker:    String,
