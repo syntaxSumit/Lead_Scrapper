@@ -65,7 +65,7 @@ function cleanJSONResponse(rawText) {
   }
 }
 
-async function callAIGateway({ prompt, systemPrompt, modelName }) {
+async function callAIGateway({ prompt, systemPrompt, modelName, temperature = 0.3 }) {
   let baseUrl = (process.env.AI_GATEWAY_URL || '').trim().replace(/\/+$/, '');
   if (!baseUrl.endsWith('/chat/completions')) {
     baseUrl = `${baseUrl}/chat/completions`;
@@ -93,7 +93,7 @@ async function callAIGateway({ prompt, systemPrompt, modelName }) {
     {
       model,
       messages,
-      temperature: 0.3,
+      temperature,
       // Many modern gateways support json_object response_format
       response_format: { type: 'json_object' },
     },
@@ -111,7 +111,7 @@ async function callAIGateway({ prompt, systemPrompt, modelName }) {
   return cleanJSONResponse(content);
 }
 
-async function callDirectGemini({ prompt, systemPrompt, modelName }) {
+async function callDirectGemini({ prompt, systemPrompt, modelName, temperature = 0.3 }) {
   const apiKey = (process.env.GEMINI_API_KEY || process.env.AI_API_KEY || '').trim();
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured in .env file.');
@@ -124,7 +124,7 @@ async function callDirectGemini({ prompt, systemPrompt, modelName }) {
     model: selectedModel,
     generationConfig: {
       responseMimeType: 'application/json',
-      temperature: 0.3,
+      temperature,
     },
   };
 
@@ -144,7 +144,7 @@ async function callDirectGemini({ prompt, systemPrompt, modelName }) {
   }
 }
 
-async function callGoogleCloudVertex({ prompt, systemPrompt, modelName }) {
+async function callGoogleCloudVertex({ prompt, systemPrompt, modelName, temperature = 0.3 }) {
   const client = await googleAuth.getClient();
   const token = await client.getAccessToken();
   const selectedModel = modelName || process.env.GEMINI_MODEL || 'gemini-3.5-flash';
@@ -161,7 +161,7 @@ async function callGoogleCloudVertex({ prompt, systemPrompt, modelName }) {
     ],
     generationConfig: {
       responseMimeType: 'application/json',
-      temperature: 0.3,
+      temperature,
     },
   };
 
@@ -193,18 +193,18 @@ async function callGoogleCloudVertex({ prompt, systemPrompt, modelName }) {
  * 1. Google Cloud Vertex AI (if google-key.json is present, using ₹28,569 credits)
  * 2. Gateway or Direct Gemini
  */
-async function generateJSON({ prompt, systemPrompt, modelName }) {
+async function generateJSON({ prompt, systemPrompt, modelName, temperature = 0.3 }) {
   if (googleAuth) {
-    return callGoogleCloudVertex({ prompt, systemPrompt, modelName });
+    return callGoogleCloudVertex({ prompt, systemPrompt, modelName, temperature });
   }
 
   const isGateway = Boolean(process.env.AI_GATEWAY_URL);
 
   if (isGateway) {
-    return callAIGateway({ prompt, systemPrompt, modelName });
+    return callAIGateway({ prompt, systemPrompt, modelName, temperature });
   }
 
-  return callDirectGemini({ prompt, systemPrompt, modelName });
+  return callDirectGemini({ prompt, systemPrompt, modelName, temperature });
 }
 
 module.exports = { generateJSON };
