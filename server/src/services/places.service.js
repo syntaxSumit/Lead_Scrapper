@@ -2,7 +2,6 @@ const axios = require('axios');
 const crypto = require('crypto');
 const Lead = require('../models/Lead');
 const SeenPlace = require('../models/SeenPlace');
-const SearchCache = require('../models/SearchCache');
 const { detectWebsiteStatus } = require('./websiteDetect.service');
 const { computeLeadScore } = require('./scoring.service');
 const { externalApiQueue } = require('../middleware/rateLimit');
@@ -38,11 +37,18 @@ function toGoogleType(category) {
   return CATEGORY_TYPE_MAP[key] || 'establishment';
 }
 
-function makeCacheKey(params) {
-  return crypto.createHash('md5').update(JSON.stringify(params)).digest('hex');
-}
-
-async function searchPlaces({ query, location, lat, lng, radius = 5000, category, userId, limit = 20 }) {
+async function searchPlaces({
+  query,
+  location,
+  state,
+  lat,
+  lng,
+  radius = 50000,
+  category,
+  userId,
+  limit = 20,
+  onlyNeedWebsite = true,
+}) {
   const targetLimit = Math.max(1, Math.min(parseInt(limit, 10) || 20, 60));
 
   // 1. Fetch all place_ids this user has EVER seen (to ensure zero duplicate businesses)
@@ -74,8 +80,19 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     'places.regularOpeningHours',
   ];
 
+  // Build full geographic search location string (combining City and State if provided)
+  let fullLocation = '';
+  if (location && state) {
+    fullLocation = `${location}, ${state}`;
+  } else if (state) {
+    fullLocation = `${state}, India`;
+  } else if (location) {
+    fullLocation = location;
+  }
+
   const isNearby = lat != null && lng != null;
-  let places = [];
+  const places = [];
+  const fallbackCandidates = [];
   let pageToken = null;
   let iteration = 0;
   const maxIterations = 5;
@@ -83,11 +100,7 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
   do {
     iteration++;
     const googleType = toGoogleType(category);
-    // If user wants more than 20 leads, or category is not in Table A, use searchText with locationBias.
     const useNearby = isNearby && targetLimit <= 20 && googleType && googleType !== 'establishment' && iteration === 1;
-
-    const remaining = targetLimit - places.length;
-    const maxResultCount = Math.max(1, Math.min(remaining, 20));
 
     const endpoint = useNearby
       ? `${PLACES_BASE}/places:searchNearby`
@@ -96,23 +109,23 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     const body = useNearby
       ? {
           locationRestriction: {
-            circle: { center: { latitude: lat, longitude: lng }, radius: parseFloat(radius) },
+            circle: { center: { latitude: lat, longitude: lng }, radius: parseFloat(radius || 50000) },
           },
           includedTypes: [googleType],
-          maxResultCount,
+          maxResultCount: 20,
         }
       : isNearby
       ? {
           textQuery: category || query,
           locationBias: {
-            circle: { center: { latitude: lat, longitude: lng }, radius: parseFloat(radius) },
+            circle: { center: { latitude: lat, longitude: lng }, radius: parseFloat(radius || 50000) },
           },
-          maxResultCount,
+          maxResultCount: 20,
           ...(pageToken ? { pageToken } : {}),
         }
       : {
-          textQuery: `${category || query} in ${location}`,
-          maxResultCount,
+          textQuery: fullLocation ? `${category || query} in ${fullLocation}` : (category || query),
+          maxResultCount: 20,
           ...(pageToken ? { pageToken } : {}),
         };
 
@@ -141,10 +154,34 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     // Filter out ANY business that this user has already seen before
     const freshBatch = rawPlaces.filter(p => !seenSet.has(p.id));
 
+    // Mark as seen immediately so pagination never duplicates
     for (const p of freshBatch) {
-      if (places.length < targetLimit) {
-        places.push(p);
-        seenSet.add(p.id);
+      seenSet.add(p.id);
+    }
+
+    // Probe website status concurrently for this batch (3s fast probe)
+    const probedBatch = await Promise.all(
+      freshBatch.map(async p => {
+        const websiteUrl = p.websiteUri || null;
+        const websiteStatus = await detectWebsiteStatus(websiteUrl);
+        return { ...p, websiteStatus, probedWebsiteUrl: websiteUrl };
+      })
+    );
+
+    // Segregate candidates: businesses that NEED a website vs already have one
+    for (const item of probedBatch) {
+      const needsWebsite = ['NO_WEBSITE', 'BROKEN', 'SOCIAL_ONLY'].includes(item.websiteStatus);
+
+      if (onlyNeedWebsite) {
+        if (needsWebsite && places.length < targetLimit) {
+          places.push(item);
+        } else if (!needsWebsite) {
+          fallbackCandidates.push(item);
+        }
+      } else {
+        if (places.length < targetLimit) {
+          places.push(item);
+        }
       }
     }
 
@@ -155,9 +192,16 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     }
 
     if (pageToken && places.length < targetLimit) {
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 1500));
     }
   } while (pageToken && places.length < targetLimit && iteration < maxIterations);
+
+  // If strict filtering was requested but not enough leads without sites were found,
+  // top-up with fallback candidates sorted by quality so user never gets an empty screen
+  if (places.length < targetLimit && fallbackCandidates.length > 0) {
+    const needed = targetLimit - places.length;
+    places.push(...fallbackCandidates.slice(0, needed));
+  }
 
   // 2. Archive all existing leads into SeenPlace so they are permanently remembered
   if (existingLeads.length > 0) {
@@ -186,37 +230,35 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     }));
     await SeenPlace.bulkWrite(newSeenOps);
 
-    // Process all discovered places concurrently (website probe + scoring)
-    const placeDocs = await Promise.all(
-      places.map(async p => {
-        const placeId = p.id;
-        const websiteUrl = p.websiteUri || null;
-        const websiteStatus = await detectWebsiteStatus(websiteUrl);
+    // Process all discovered places (scoring & metadata)
+    const placeDocs = places.map(p => {
+      const placeId = p.id;
+      const websiteUrl = p.probedWebsiteUrl ?? (p.websiteUri || null);
+      const websiteStatus = p.websiteStatus;
 
-        const doc = {
-          place_id:    placeId,
-          name:        p.displayName?.text || 'Unknown',
-          category:    category || query,
-          address:     p.formattedAddress,
-          phone:       p.nationalPhoneNumber,
-          rating:      p.rating,
-          reviewCount: p.userRatingCount,
-          mapsUrl:     p.googleMapsUri,
-          websiteUrl,
-          websiteStatus,
-          lat:         p.location?.latitude,
-          lng:         p.location?.longitude,
-          openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
-          searchQuery: query || category,
-          userId,
-        };
+      const doc = {
+        place_id:    placeId,
+        name:        p.displayName?.text || 'Unknown',
+        category:    category || query,
+        address:     p.formattedAddress,
+        phone:       p.nationalPhoneNumber,
+        rating:      p.rating,
+        reviewCount: p.userRatingCount,
+        mapsUrl:     p.googleMapsUri,
+        websiteUrl,
+        websiteStatus,
+        lat:         p.location?.latitude,
+        lng:         p.location?.longitude,
+        openingHours: p.regularOpeningHours?.weekdayDescriptions || [],
+        searchQuery: fullLocation ? `${category || query} in ${fullLocation}` : (category || query),
+        userId,
+      };
 
-        const scores = computeLeadScore(doc);
-        doc.leadScore  = scores.leadScore;
-        doc.scoreLabel = scores.scoreLabel;
-        return doc;
-      })
-    );
+      const scores = computeLeadScore(doc);
+      doc.leadScore  = scores.leadScore;
+      doc.scoreLabel = scores.scoreLabel;
+      return doc;
+    });
 
     // Bulk insert new leads
     const bulkOps = placeDocs.map(doc => ({
@@ -229,7 +271,10 @@ async function searchPlaces({ query, location, lat, lng, radius = 5000, category
     await Lead.bulkWrite(bulkOps);
   }
 
-  return Lead.find({ userId }).sort({ leadScore: -1 }).lean();
+  // Return leads with the HOTTEST leads first (highest leadScore, reviewCount, and rating)
+  return Lead.find({ userId })
+    .sort({ leadScore: -1, reviewCount: -1, rating: -1 })
+    .lean();
 }
 
 module.exports = { searchPlaces };

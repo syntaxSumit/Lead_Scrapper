@@ -3,19 +3,22 @@ const SavedSearch = require('../models/SavedSearch');
 
 async function search(req, res, next) {
   try {
-    const { query, location, lat, lng, radius = 5000, category, limit = 20 } = req.body;
+    const { query, location, state, lat, lng, radius, category, limit = 20, onlyNeedWebsite = true } = req.body;
     if (!category && !query)
       return res.status(400).json({ error: 'query or category is required' });
-    if (!location && (lat == null || lng == null))
-      return res.status(400).json({ error: 'location text or lat/lng coordinates are required' });
+    if (!location && !state && (lat == null || lng == null))
+      return res.status(400).json({ error: 'Please enter a location, select a state, or use GPS' });
 
     const leads = await searchPlaces({
-      query, location,
+      query,
+      location,
+      state,
       lat:    lat != null ? parseFloat(lat) : undefined,
       lng:    lng != null ? parseFloat(lng) : undefined,
-      radius: parseInt(radius, 10),
+      radius: radius ? parseInt(radius, 10) : undefined,
       category,
       limit:  parseInt(limit, 10) || 20,
+      onlyNeedWebsite: onlyNeedWebsite !== false,
       userId: req.user._id,
     });
 
@@ -25,10 +28,10 @@ async function search(req, res, next) {
 
 async function saveSearch(req, res, next) {
   try {
-    const { name, query, location, radius, limit, category, filters } = req.body;
+    const { name, query, location, state, radius, limit, category, onlyNeedWebsite, filters } = req.body;
     if (!name) return res.status(400).json({ error: 'Search name is required' });
     const doc = await SavedSearch.create({
-      name, query, location, radius, limit, category, filters,
+      name, query, location, state, radius, limit, category, onlyNeedWebsite, filters,
       userId: req.user._id,
     });
     res.status(201).json(doc);
