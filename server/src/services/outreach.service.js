@@ -95,9 +95,12 @@ async function generateOutreach({ lead, language = 'english' }) {
     observation = `We noticed you don't have a website to show your ${categoryInfo.offerings}. We want to make one for you!`;
   }
 
-  const prompt = `You are the lead outreach specialist for ${agency} (${agencyUrl}).
+  const brandGreeting = lead.name ? `Hello ${lead.name}! ` : `Hello! `;
+  const brandTarget = lead.name ? lead.name : categoryInfo.nicheLabel;
 
-Create a personalized cold message for this business following the EXACT format below.
+  const prompt = `You are the lead outreach copywriter for ${agency} (${agencyUrl}).
+
+Create a short, catchy, high-conversion cold message for this business following the EXACT layout below.
 
 BUSINESS DETAILS:
 - Brand Name: ${lead.name}
@@ -107,29 +110,27 @@ BUSINESS DETAILS:
 - Website Status: ${websiteStatus}
 
 MANDATORY WHATSAPP COLD MESSAGE FORMAT:
-Hello team ${lead.name}! I'm from ${agencyUrl}
+${brandGreeting}I'm from ${agencyUrl}
 
-Congrats on your amazing ${ratingText} on Google! 👏
+Congrats on your amazing ${ratingText} on Google! ✨
 
 ${observation}
 
 Our risk-free offer:
-* 2 free sample designs first
-* Live in 7 days
-* Easy self-editing dashboard
+• 2 free sample designs first
+• Live in 7 days
+• Easy self-editing dashboard
 
-Can I send you 2 free sample designs for ${lead.name}?
-
-Best regards,
-Team ${agency}
+Can I send you 2 free sample designs for ${brandTarget}?
 
 CRITICAL RULES:
 1. Maintain this EXACT message layout with double line breaks (\\n\\n) separating each section.
-2. Always mention the business's brand name "${lead.name}" in the greeting and closing question.
-3. Keep the 3 bullet points exactly as shown under "Our risk-free offer:".
-4. Return ONLY valid JSON:
+2. Keep it short, punchy, convenient, and easy to read. Do NOT add unnecessary emojis.
+3. Use clean dot bullet points (•) for the 3 offer items.
+4. End the WhatsApp message directly on the question ("Can I send you 2 free sample designs for ${brandTarget}?"). Do NOT add any extra sign-off or "Best regards".
+5. Return ONLY valid JSON:
 {
-  "whatsapp": "The exact formatted message",
+  "whatsapp": "The exact formatted short message",
   "emailSubject": "2 free sample designs for ${lead.name} - ${agency}",
   "emailBody": "Professional email body following this format",
   "callScript": "30-second cold call script based on this offer"
@@ -137,9 +138,9 @@ CRITICAL RULES:
 
   try {
     const parsed = await generateJSON({
-      systemPrompt: `You are an elite B2B sales copywriter for ${agency}. Output clean, perfectly formatted outreach messages in valid JSON only.`,
+      systemPrompt: `You are an elite B2B sales copywriter for ${agency}. Output clean, short, punchy outreach messages in valid JSON only.`,
       prompt,
-      temperature: 0.3,
+      temperature: 0.2,
     });
 
     if (parsed && parsed.whatsapp) {
@@ -155,6 +156,8 @@ CRITICAL RULES:
     websiteStatus,
     ratingText,
     observation,
+    brandGreeting,
+    brandTarget,
     agency,
     agencyUrl,
     language,
@@ -167,39 +170,41 @@ function getFallbackOutreach({
   websiteStatus,
   ratingText,
   observation,
+  brandGreeting,
+  brandTarget,
   agency,
   agencyUrl,
   language,
 }) {
-  const whatsapp = `Hello team ${lead.name}! I'm from ${agencyUrl}
+  const greeting = brandGreeting || (lead.name ? `Hello ${lead.name}! ` : `Hello! `);
+  const target = brandTarget || (lead.name ? lead.name : categoryInfo.nicheLabel);
 
-Congrats on your amazing ${ratingText} on Google! 👏
+  const whatsapp = `${greeting}I'm from ${agencyUrl}
 
-${observation}
-
-Our risk-free offer:
-* 2 free sample designs first
-* Live in 7 days
-* Easy self-editing dashboard
-
-Can I send you 2 free sample designs for ${lead.name}?
-
-Best regards,
-Team ${agency}`;
-
-  const emailSubject = `2 free sample website designs for ${lead.name} - ${agency}`;
-  const emailBody = `Hi team ${lead.name},
-
-Congrats on your amazing ${ratingText} on Google!
+Congrats on your amazing ${ratingText} on Google! ✨
 
 ${observation}
 
 Our risk-free offer:
-* 2 free sample designs first
-* Live in 7 days
-* Easy self-editing dashboard
+• 2 free sample designs first
+• Live in 7 days
+• Easy self-editing dashboard
 
-Can I send you 2 free sample designs for ${lead.name}?
+Can I send you 2 free sample designs for ${target}?`;
+
+  const emailSubject = `2 free sample website designs for ${lead.name || 'your business'} - ${agency}`;
+  const emailBody = `Hi team ${lead.name || 'there'},
+
+Congrats on your amazing ${ratingText} on Google! ✨
+
+${observation}
+
+Our risk-free offer:
+• 2 free sample designs first
+• Live in 7 days
+• Easy self-editing dashboard
+
+Can I send you 2 free sample designs for ${target}?
 
 Best regards,
 Team ${agency}
