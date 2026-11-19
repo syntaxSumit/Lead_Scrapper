@@ -29,7 +29,7 @@ export default function SavedSearches({ onRun }) {
         {searches.map(s => (
           <div key={s._id} className="flex items-center gap-1 bg-surface2 border border-border rounded-lg px-2 py-1">
             <button
-              className="text-xs text-slate-300 hover:text-indigo-400 transition-colors"
+              className="text-xs text-slate-300 hover:text-emerald-400 transition-colors"
               onClick={() => onRun(s)}
             >
               {s.name}

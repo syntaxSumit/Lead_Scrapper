@@ -9,10 +9,10 @@ import {
 } from '../ui/Icons.jsx';
 
 const statDefs = [
-  { key: 'total',     label: 'Total Leads',    Icon: IconBuilding, color: 'text-slate-100',   bg: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' },
+  { key: 'total',     label: 'Total Leads',    Icon: IconBuilding, color: 'text-slate-100',   bg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
   { key: 'noWebsite', label: 'No Website',     Icon: IconBan,      color: 'text-rose-400',    bg: 'bg-rose-500/10 border-rose-500/20 text-rose-400' },
   { key: 'hot',       label: 'Hot Leads',      Icon: IconFlame,    color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
-  { key: 'contacted', label: 'Contacted',      Icon: IconSend,     color: 'text-indigo-400',  bg: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' },
+  { key: 'contacted', label: 'Contacted',      Icon: IconSend,     color: 'text-teal-400',    bg: 'bg-teal-500/10 border-teal-500/20 text-teal-400' },
   { key: 'replied',   label: 'Replied',        Icon: IconMessageSquare, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400' },
   { key: 'won',       label: 'Won Deals',      Icon: IconTrophy,   color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20 text-amber-400' },
 ];

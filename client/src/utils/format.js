@@ -28,7 +28,7 @@ export function statusBg(status) {
 export function pipelineBg(status) {
   const map = {
     NEW:       'bg-white/[0.05] text-slate-300 border-white/[0.08]',
-    CONTACTED: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+    CONTACTED: 'bg-teal-500/15 text-teal-300 border-teal-500/30',
     REPLIED:   'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
     MEETING:   'bg-amber-500/15 text-amber-300 border-amber-500/30',
     WON:       'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',

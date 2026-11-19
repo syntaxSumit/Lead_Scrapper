@@ -102,7 +102,7 @@ export default function AutoOutreachModal({ open, onClose, waConnected, leadsCou
                     onClick={() => toggleTarget(opt.key)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                       targets.includes(opt.key)
-                        ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                        ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
                         : 'bg-surface2 border-border text-slate-400 hover:border-slate-500'
                     }`}
                   >
@@ -176,11 +176,11 @@ export default function AutoOutreachModal({ open, onClose, waConnected, leadsCou
                 <span className="text-slate-300 font-medium">
                   Sending {status.sent + status.failed + status.skipped + 1} of {status.total}...
                 </span>
-                <span className="text-indigo-400 font-mono">{progress}%</span>
+                <span className="text-emerald-400 font-mono">{progress}%</span>
               </div>
               <div className="h-2 bg-surface2 rounded-full overflow-hidden border border-border">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-600 to-violet-500 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>

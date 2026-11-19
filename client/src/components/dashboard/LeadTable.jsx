@@ -177,7 +177,7 @@ export default function LeadTable({
                   type="checkbox"
                   checked={selected.size === leads.length && leads.length > 0}
                   onChange={toggleAll}
-                  className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer rounded"
+                  className="accent-emerald-500 w-3.5 h-3.5 cursor-pointer rounded"
                   aria-label="Select all"
                 />
               </th>
@@ -195,7 +195,7 @@ export default function LeadTable({
               <tr>
                 <td colSpan={8} className="text-center py-20 text-slate-400 text-sm">
                   <div className="flex flex-col items-center justify-center gap-2.5">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                       <IconTarget className="w-6 h-6" />
                     </div>
                     <span className="font-medium text-slate-200">No leads discovered yet</span>
@@ -207,7 +207,7 @@ export default function LeadTable({
             {sorted.map(lead => (
               <tr
                 key={lead._id}
-                className="hover:bg-indigo-500/[0.04] cursor-pointer transition-colors group"
+                className="hover:bg-emerald-500/[0.05] cursor-pointer transition-colors group"
                 onClick={() => navigate(`/leads/${lead._id}`)}
               >
                 <td className="px-3.5 py-3" onClick={e => e.stopPropagation()}>
@@ -215,18 +215,18 @@ export default function LeadTable({
                     type="checkbox"
                     checked={selected.has(lead._id)}
                     onChange={() => toggle(lead._id)}
-                    className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer rounded"
+                    className="accent-emerald-500 w-3.5 h-3.5 cursor-pointer rounded"
                     aria-label={`Select ${lead.name}`}
                   />
                 </td>
                 <td className="px-3.5 py-3">
-                  <div className="font-semibold text-slate-100 truncate max-w-[200px] group-hover:text-indigo-300 transition-colors">
+                  <div className="font-semibold text-slate-100 truncate max-w-[200px] group-hover:text-emerald-300 transition-colors">
                     {lead.name}
                   </div>
                   {lead.phone && (
                     <a
                       href={`tel:${lead.phone}`}
-                      className="text-xs text-slate-400 hover:text-indigo-400 transition-colors font-mono"
+                      className="text-xs text-slate-400 hover:text-emerald-400 transition-colors font-mono"
                       onClick={e => e.stopPropagation()}
                     >
                       {lead.phone}
@@ -271,11 +271,11 @@ export default function LeadTable({
                       }
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs px-2.5 py-1.5 rounded-lg border border-white/[0.08] hover:border-indigo-400/50 hover:bg-indigo-500/10 text-slate-300 hover:text-white transition-all inline-flex items-center gap-1.5 font-medium"
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-white/[0.08] hover:border-emerald-400/50 hover:bg-emerald-500/10 text-slate-300 hover:text-white transition-all inline-flex items-center gap-1.5 font-medium"
                       title="View business on Google Maps"
                       onClick={e => e.stopPropagation()}
                     >
-                      <IconMapPin className="w-3.5 h-3.5 text-indigo-400" /> Maps
+                      <IconMapPin className="w-3.5 h-3.5 text-emerald-400" /> Maps
                     </a>
                     <Button
                       size="sm"
@@ -284,9 +284,9 @@ export default function LeadTable({
                       disabled={analyzing === lead._id}
                       aria-label="Analyze website"
                       title="Run AI Website Analysis"
-                      className="!px-2.5 !py-1.5 hover:border-indigo-500/40 hover:text-indigo-300 gap-1.5"
+                      className="!px-2.5 !py-1.5 hover:border-emerald-500/40 hover:text-emerald-300 gap-1.5"
                     >
-                      {analyzing === lead._id ? <Spinner size={3} /> : <><IconSparkles className="w-3.5 h-3.5 text-indigo-400" /> Audit</>}
+                      {analyzing === lead._id ? <Spinner size={3} /> : <><IconSparkles className="w-3.5 h-3.5 text-emerald-400" /> Audit</>}
                     </Button>
                     {lead.phone && (
                       <a

@@ -19,14 +19,14 @@ function copy(text) {
   toast.success('Copied');
 }
 
-function CopyBtn({ text }) {
+function CopyBtn({ text, label = 'Copy' }) {
   return (
     <button
       type="button"
       onClick={() => copy(text)}
-      className="no-print shrink-0 text-[11px] font-medium text-indigo-300 hover:text-indigo-200 px-2 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20"
+      className="no-print shrink-0 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
     >
-      Copy
+      {label}
     </button>
   );
 }
@@ -57,7 +57,7 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
   const header = (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-2">
-        <span className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 grid place-items-center text-indigo-300">
+        <span className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 grid place-items-center text-emerald-300">
           <IconTarget className="w-4 h-4" />
         </span>
         <div>
@@ -72,7 +72,7 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
               key={l.value}
               type="button"
               onClick={() => setLang(l.value)}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${lang === l.value ? 'bg-indigo-500/80 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${lang === l.value ? 'bg-[#183d30] text-emerald-200 border border-emerald-500/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
             >
               {l.label}
             </button>
@@ -104,9 +104,9 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
       {header}
 
       {/* Agency Identity & Core Offer */}
-      <div className="rounded-xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/60 border border-indigo-500/30 p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+      <div className="rounded-xl bg-gradient-to-r from-emerald-950/80 via-[#0d241c] to-teal-950/60 border border-emerald-500/30 p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-200 bg-indigo-600/30 px-2.5 py-1 rounded-lg border border-indigo-400/40 font-mono shadow-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-200 bg-emerald-600/30 px-2.5 py-1 rounded-lg border border-emerald-400/40 font-mono shadow-sm">
             Agency: {p.agencyName || 'make4yu'}
           </span>
           <span className="text-xs text-slate-300 font-medium leading-relaxed">
@@ -118,19 +118,19 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
       {/* Who I am & Where I am speaking from */}
       {p.callerIntro && (
         <div className="mb-4">
-          <Label className="text-indigo-300">0 · Introduction (Who I am & Where I'm speaking from)</Label>
-          <div className="flex items-start gap-2 rounded-xl bg-indigo-950/35 border border-indigo-500/25 p-3">
-            <p className="flex-1 text-sm text-indigo-100 font-medium leading-relaxed">“{p.callerIntro}”</p>
-            <CopyBtn text={p.callerIntro} />
+          <Label className="text-emerald-300">0 · Introduction (Who I am & Where I'm speaking from)</Label>
+          <div className="flex items-start gap-2 rounded-xl bg-emerald-950/35 border border-emerald-500/25 p-3">
+            <p className="flex-1 text-sm text-emerald-100 font-medium leading-relaxed">“{p.callerIntro}”</p>
+            <CopyBtn text={p.callerIntro} label="Copy intro" />
           </div>
         </div>
       )}
 
       {/* Strategy strip */}
-      <div className="rounded-xl bg-gradient-to-r from-indigo-950/60 to-violet-950/40 border border-indigo-500/25 p-4 mb-4">
+      <div className="rounded-xl bg-gradient-to-r from-emerald-950/60 to-teal-950/40 border border-emerald-500/25 p-4 mb-4">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">
           {p.temperature && (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
               {p.temperature}
             </span>
           )}
@@ -153,7 +153,7 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
         <Label className="text-emerald-400">1 · Open with</Label>
         <div className="flex items-start gap-2 rounded-xl bg-emerald-950/25 border border-emerald-500/20 p-3">
           <p className="flex-1 text-sm text-slate-100 leading-relaxed">“{p.openingHook}”</p>
-          <CopyBtn text={p.openingHook} />
+          <CopyBtn text={p.openingHook} label="Copy line" />
         </div>
       </div>
 
@@ -204,7 +204,7 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
                 </button>
                 <div className={`${openObj === i ? 'flex' : 'hidden print-show'} items-start gap-2 px-3 pb-3`}>
                   <p className="flex-1 text-xs text-slate-300 leading-relaxed">{o.response}</p>
-                  <CopyBtn text={o.response} />
+                  <CopyBtn text={o.response} label="Copy reply" />
                 </div>
               </div>
             ))}
@@ -215,10 +215,10 @@ export default function PitchPlaybook({ lead, onLeadUpdate }) {
       {/* Close */}
       {p.closingAsk && (
         <div className="mb-4">
-          <Label className="text-indigo-300">5 · Close with</Label>
-          <div className="flex items-start gap-2 rounded-xl bg-indigo-950/30 border border-indigo-500/25 p-3">
+          <Label className="text-emerald-300">5 · Close with</Label>
+          <div className="flex items-start gap-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 p-3">
             <p className="flex-1 text-sm text-slate-100">{p.closingAsk}</p>
-            <CopyBtn text={p.closingAsk} />
+            <CopyBtn text={p.closingAsk} label="Copy close" />
           </div>
         </div>
       )}

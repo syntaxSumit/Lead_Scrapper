@@ -41,7 +41,7 @@ export default function MapView({ leads }) {
                 </Badge>
                 <br />
                 <button
-                  className="mt-2 text-indigo-400 text-xs hover:underline"
+                  className="mt-2 text-emerald-400 text-xs hover:underline"
                   onClick={() => navigate(`/leads/${lead._id}`)}
                 >
                   View details →

@@ -38,7 +38,7 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing, onLeadUpdate
               href={lead.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-indigo-400 hover:underline mt-1 inline-block"
+              className="text-xs text-emerald-400 hover:underline mt-1 inline-block"
             >
               {lead.websiteUrl} ↗
             </a>
@@ -60,7 +60,7 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing, onLeadUpdate
             className="inline-flex items-center justify-center gap-1.5 font-medium rounded-xl text-xs px-3.5 py-2 bg-white/[0.05] hover:bg-white/[0.09] text-slate-200 border border-white/[0.09] hover:border-white/[0.18] transition-all"
             title="Open in Google Maps"
           >
-            <IconMapPin className="w-3.5 h-3.5 text-indigo-400" /> Maps <IconExternalLink className="w-3 h-3 text-slate-400" />
+            <IconMapPin className="w-3.5 h-3.5 text-emerald-400" /> Maps <IconExternalLink className="w-3 h-3 text-slate-400" />
           </a>
           <Button
             onClick={() => onAnalyze(lead._id)}
@@ -102,7 +102,7 @@ export default function AnalyzerPanel({ lead, onAnalyze, analyzing, onLeadUpdate
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Suggested Pitch Angle
                 </h3>
-                <blockquote className="text-sm text-indigo-300 font-medium bg-indigo-950/30 border-l-2 border-indigo-500 p-3 rounded-r-lg">
+                <blockquote className="text-sm text-emerald-300 font-medium bg-emerald-950/30 border-l-2 border-emerald-500 p-3 rounded-r-lg">
                   "{analysis.suggestedPitchAngle || 'Position modern web design to boost local footfall and credibility.'}"
                 </blockquote>
               </div>

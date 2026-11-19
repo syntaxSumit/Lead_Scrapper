@@ -3,7 +3,7 @@ export default function ScoreGauge({ score = 0, label = 'Overall Score', size = 
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (Math.min(Math.max(score, 0), 100) / 100) * circumference;
 
-  const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
+  const color = score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -13,7 +13,7 @@ export default function ScoreGauge({ score = 0, label = 'Overall Score', size = 
             cx="50"
             cy="50"
             r={radius}
-            stroke="#2a2a3a"
+            stroke="#132c22"
             strokeWidth="8"
             fill="transparent"
           />

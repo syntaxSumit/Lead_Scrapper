@@ -76,7 +76,7 @@ export default function OutreachModal({ open, onClose, lead, onLeadUpdate }) {
               <button
                 className={`px-4 py-2 border-b-2 transition-colors ${
                   activeTab === 'whatsapp'
-                    ? 'border-indigo-500 text-indigo-400'
+                    ? 'border-emerald-500 text-emerald-400'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
                 onClick={() => setActiveTab('whatsapp')}
@@ -86,7 +86,7 @@ export default function OutreachModal({ open, onClose, lead, onLeadUpdate }) {
               <button
                 className={`px-4 py-2 border-b-2 transition-colors ${
                   activeTab === 'email'
-                    ? 'border-indigo-500 text-indigo-400'
+                    ? 'border-emerald-500 text-emerald-400'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
                 onClick={() => setActiveTab('email')}
@@ -96,7 +96,7 @@ export default function OutreachModal({ open, onClose, lead, onLeadUpdate }) {
               <button
                 className={`px-4 py-2 border-b-2 transition-colors ${
                   activeTab === 'phone'
-                    ? 'border-indigo-500 text-indigo-400'
+                    ? 'border-emerald-500 text-emerald-400'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
                 onClick={() => setActiveTab('phone')}

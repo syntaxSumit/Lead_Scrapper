@@ -56,14 +56,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-base flex flex-col">
       {/* Top Navigation */}
-      <header className="border-b border-white/[0.08] bg-[#0a0b12]/85 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-sm">
+      <header className="border-b border-emerald-950/80 bg-[#07130e]/90 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 border border-white/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-950/50 border border-emerald-400/30">
             <IconTarget className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+              <span className="font-bold text-base tracking-tight bg-gradient-to-r from-emerald-200 via-white to-slate-200 bg-clip-text text-transparent">
                 LeadScout
               </span>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 shadow-sm">
@@ -76,10 +76,10 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-xl p-1 text-xs shadow-inner backdrop-blur-sm">
+          <div className="flex items-center bg-[#122c22]/90 border border-emerald-500/20 rounded-xl p-1 text-xs shadow-inner backdrop-blur-sm">
             <button
               className={`px-3.5 py-1.5 rounded-lg transition-all duration-150 flex items-center gap-1.5 ${
-                view === 'table' ? 'bg-indigo-600 text-white font-medium shadow-sm shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200'
+                view === 'table' ? 'bg-[#1a4335] text-emerald-300 font-medium shadow-sm shadow-emerald-950/40 border border-emerald-500/40' : 'text-slate-400 hover:text-emerald-200'
               }`}
               onClick={() => setView('table')}
             >
@@ -87,7 +87,7 @@ export default function Dashboard() {
             </button>
             <button
               className={`px-3.5 py-1.5 rounded-lg transition-all duration-150 flex items-center gap-1.5 ${
-                view === 'map' ? 'bg-indigo-600 text-white font-medium shadow-sm shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200'
+                view === 'map' ? 'bg-[#1a4335] text-emerald-300 font-medium shadow-sm shadow-emerald-950/40 border border-emerald-500/40' : 'text-slate-400 hover:text-emerald-200'
               }`}
               onClick={() => setView('map')}
             >

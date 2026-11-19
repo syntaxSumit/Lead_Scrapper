@@ -153,7 +153,7 @@ export default function DiscoveryForm({ onResults, loading, onSearch }) {
     <div className="card-aesthetic rounded-2xl p-6 border border-white/[0.08] shadow-lg relative overflow-hidden">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <IconSearch className="w-3.5 h-3.5" />
           </div>
           <div>
@@ -189,7 +189,7 @@ export default function DiscoveryForm({ onResults, loading, onSearch }) {
             <button
               type="button"
               onClick={useMyLocation}
-              className="text-xs text-indigo-400 hover:text-indigo-300 mt-1.5 flex items-center gap-1.5 transition-colors font-medium"
+              className="text-xs text-emerald-400 hover:text-emerald-300 mt-1.5 flex items-center gap-1.5 transition-colors font-medium"
             >
               {geoLoading ? <Spinner size={3} /> : <IconMapPin className="w-3 h-3" />} Use my GPS location
             </button>
@@ -249,7 +249,7 @@ export default function DiscoveryForm({ onResults, loading, onSearch }) {
 
           {/* Submit */}
           <div className="flex flex-col justify-end gap-2">
-            <Button type="submit" disabled={loading} className="w-full h-[42px] shadow-md shadow-indigo-600/20 gap-2">
+            <Button type="submit" disabled={loading} className="w-full h-[42px] shadow-md shadow-emerald-950/40 gap-2">
               {loading ? (
                 <><Spinner size={4} /> Finding Hot Leads…</>
               ) : (
